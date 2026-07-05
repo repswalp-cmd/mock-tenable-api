@@ -332,7 +332,7 @@ def scans():
     _log(200, "scans")
     return jsonify({
         "folders":   [],
-        "scans":     None,
+        "scans":     [],
         "timestamp": int(time.time()),
     })
 
@@ -364,6 +364,14 @@ def users():
     })
 
 
+@app.route("/groups", methods=["GET"])
+def groups():
+    if not require_api_keys():
+        return err_401()
+    _log(200, "groups")
+    return jsonify({"groups": []})
+
+
 @app.route("/user-groups", methods=["GET"])
 def user_groups():
     if not require_api_keys():
@@ -389,6 +397,55 @@ def asset_attributes():
     return jsonify({"attributes": [], "pagination": {"total": 0, "offset": 0, "limit": 100}})
 
 
+# ── Recast rules (v1) ─────────────────────────────────────────────────────────
+@app.route("/v1/recast/rules/search", methods=["GET", "POST"])
+def recast_rules_search():
+    if not require_api_keys():
+        return err_401()
+    _log(200, "recast rules search")
+    return jsonify({"rules": [], "pagination": {"total": 0, "offset": 0, "limit": 100}})
+
+
+# ── Server properties ─────────────────────────────────────────────────────────
+@app.route("/server/properties", methods=["GET"])
+def server_properties():
+    if not require_api_keys():
+        return err_401()
+    _log(200, "server properties")
+    return jsonify({
+        "analytics": {"enabled": False},
+        "capabilities": {"multi_scanner": False, "multi_user": True, "report_email_config": False},
+        "enterprise_pause": False,
+        "evaluation": {"scans_remaining": 0},
+        "expiration": None,
+        "expiration_time": 0,
+        "idle_timeout": 0,
+        "license": {"type": "enterprise", "ips": 1587},
+        "loaded_plugin_set": "202407010000",
+        "nessus_type": "Nessus Enterprise",
+        "nessus_ui_version": "10.7.4",
+        "plugin_set": "202407010000",
+        "scanner_boottime": 0,
+        "server_build": "20240701",
+        "server_uuid": _make_uuid("luminary-tenable-server"),
+        "server_version": "10.7.4",
+        "update": {"href": None},
+    })
+
+
+# ── Agents — Tenable uses /scanners/null/agents as the canonical path ─────────
+@app.route("/scanners/null/agents", methods=["GET"])
+@app.route("/scanners/<scanner_id>/agents", methods=["GET"])
+def scanner_agents(scanner_id="null"):
+    if not require_api_keys():
+        return err_401()
+    _log(200, f"agents scanner={scanner_id}")
+    return jsonify({
+        "agents": [],
+        "pagination": {"total": 0, "offset": 0, "limit": 100, "sort": []},
+    })
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # WAS — Web App Scanning stubs
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -401,6 +458,17 @@ def was_vulnerabilities():
     return jsonify({
         "vulnerabilities": [],
         "pagination": {"total": 0, "offset": 0, "limit": 100, "sort": []},
+    })
+
+
+@app.route("/was/v2/vulnerabilities/search", methods=["GET", "POST"])
+def was_vulnerabilities_search():
+    if not require_api_keys():
+        return err_401()
+    _log(200, "was vulnerabilities search")
+    return jsonify({
+        "pagination": {"total": 0, "offset": 0, "limit": 100, "sort": []},
+        "items": [],
     })
 
 

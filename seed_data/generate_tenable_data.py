@@ -164,13 +164,12 @@ def make_asset(row):
                         "first_seen": iso(first_seen + dt.timedelta(hours=2)),
                         "last_seen": iso(last_seen)})
 
-    fqdn = host.lower() + "." + DOMAIN
     iface = {
         "name": "eth0",
         "mac_addresses": [mac] if mac else [],
         "ipv4s": [ip] if ip else [],
         "ipv6s": [],
-        "fqdns": [fqdn],
+        "fqdns": [host],
         "virtual": False,
         "aliased": False,
     }
@@ -207,7 +206,7 @@ def make_asset(row):
             "network_name": "Default",
             "ipv4s": [ip] if ip else [],
             "ipv6s": [],
-            "fqdns": [fqdn],
+            "fqdns": [host],
             "mac_addresses": [mac] if mac else [],
             "netbios_names": [host.upper()] if is_windows else [],
             "hostnames": [host],

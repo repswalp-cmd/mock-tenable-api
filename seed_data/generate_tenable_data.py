@@ -164,42 +164,71 @@ def make_asset(row):
                         "first_seen": iso(first_seen + dt.timedelta(hours=2)),
                         "last_seen": iso(last_seen)})
 
+    fqdn = host.lower() + "." + DOMAIN
+    iface = {
+        "name": "eth0",
+        "mac_addresses": [mac] if mac else [],
+        "ipv4s": [ip] if ip else [],
+        "ipv6s": [],
+        "fqdns": [fqdn],
+        "virtual": False,
+        "aliased": False,
+    }
+
     return {
+        # Identity
         "id": asset_id,
         "has_agent": has_agent,
         "has_plugin_results": True,
+        "agent_uuid": None,
+        "types": ["host"],
+
+        # Timestamps (top-level, same in V1 and V2)
         "created_at": iso(created_at),
         "updated_at": iso(updated_at),
         "terminated_at": None,
         "deleted_at": None,
         "first_seen": iso(first_seen),
         "last_seen": iso(last_seen),
-        "last_scan_time": iso(last_scan),
-        "last_authenticated_scan_date": iso(last_scan),
-        "last_licensed_scan_date": iso(last_scan),
-        "last_scan_id": to_uuid(_h("scanid:"+host)),
-        "last_schedule_id": None,
+
+        # Scan sub-object (V2 model)
+        "scan": {
+            "first_scan_time": iso(first_seen),
+            "last_scan_time": iso(last_scan),
+            "last_authenticated_scan_date": iso(last_scan),
+            "last_licensed_scan_date": iso(last_scan),
+            "last_scan_id": to_uuid(_h("scanid:"+host)),
+            "last_schedule_id": None,
+        },
+
+        # Network sub-object (V2 model — ipv4s/hostnames/fqdns live here)
+        "network": {
+            "network_id": "00000000-0000-0000-0000-000000000000",
+            "network_name": "Default",
+            "ipv4s": [ip] if ip else [],
+            "ipv6s": [],
+            "fqdns": [fqdn],
+            "mac_addresses": [mac] if mac else [],
+            "netbios_names": [host.upper()] if is_windows else [],
+            "hostnames": [host],
+            "ssh_fingerprints": [],
+            "network_interfaces": [iface],
+            "open_ports": [],
+        },
+
+        # Top-level identity attributes (V2 model)
+        "agent_names": [host] if has_agent else [],
+        "operating_systems": [os_str] if os_str else [],
+        "system_types": [system_type(category)],
+        "installed_software": [],
         "sources": sources,
         "tags": [],
-        "acr_score": acr,
+        "acr_score": str(acr),
+        "exposure_score": str(exposure),
         "acr_drivers": [
             {"driver_name": "device_type",      "driver_value": ["general_purpose"]},
             {"driver_name": "internet_exposure", "driver_value": ["internal"]},
         ],
-        "exposure_score": exposure,
-        "scan_frequency": None,
-        "network_id": ["00000000-0000-0000-0000-000000000000"],
-        "ipv4s": [ip] if ip else [],
-        "ipv6s": [],
-        "fqdns": [host.lower() + "." + DOMAIN],
-        "mac_addresses": [mac] if mac else [],
-        "hostnames": [host],
-        "netbios_names": [host.upper()] if is_windows else [],
-        "operating_systems": [os_str] if os_str else [],
-        "system_types": [system_type(category)],
-        "agent_names": [host] if has_agent else [],
-        "aws_ec2_name": [],
-        "installed_software": [],
         "security_protection_level": None,
         "security_protections": [],
         "exposure_confidence_value": None,

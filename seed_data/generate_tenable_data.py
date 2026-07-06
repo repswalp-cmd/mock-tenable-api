@@ -27,7 +27,7 @@ _LOCAL   = ROOT / "seed_data" / "source" / "assets_luminary.xlsx"
 SRC      = _CENTRAL if _CENTRAL.exists() else _LOCAL
 RAW.mkdir(exist_ok=True)
 
-NOW        = dt.datetime(2026, 7, 1, 18, 0, 0)
+NOW        = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
 DOMAIN     = "luminarysystems.com"
 CHUNK_SIZE = 1000
 

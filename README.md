@@ -23,13 +23,26 @@ GET  /assets/export/{export_uuid}/chunks/1   → JSON array, 1000 assets
 GET  /assets/export/{export_uuid}/chunks/2   → JSON array, 587 assets
 ```
 
-Additional endpoints:
-```
-GET  /assets                  → {"assets": [...], "total": 1587}
-GET  /assets/{uuid}           → single asset record
-GET  /                        → health check
-GET  /debug/requests          → recent request log
-```
+Asset records use the **V2 chunk schema** — network identity fields nested under `network`:
+- `network.ipv4s`, `network.fqdns`, `network.hostnames`, `network.mac_addresses`
+- `network.fqdns[0]` is used by the connector as the display name (short hostname, no domain)
+- Scan timestamps nested under `scan.last_scan_time` etc.
+
+**Full discovery scope endpoints also implemented:**
+
+| Group | Endpoints |
+|---|---|
+| Assets | `POST/GET /assets/v2/export`, `/assets/export`, status, chunks, `GET /assets`, `GET /assets/{uuid}` |
+| Vulnerabilities | `POST /vulns/export`, status, chunks (empty) |
+| Compliance | `POST /compliance/export`, status, chunks (empty) |
+| Platform | `GET /networks`, `/scanners`, `/scans`, `/exclusions`, `/server/properties` |
+| Users | `GET /users`, `/groups`, `/user-groups`, `/user-groups/{id}/members` |
+| Agents | `GET /scanners/null/agents`, `/scanners/{id}/agents` |
+| Rules | `GET+POST /v1/recast/rules/search` |
+| WAS | `GET+POST /was/v2/vulnerabilities/search`, `/was/v2/configs`, `/was/v2/scans` |
+| Filters | `GET /filters/workbenches/assets`, `/filters/workbenches/vulnerabilities` |
+| Attributes | `GET /api/v3/assets/attributes` |
+| Diagnostics | `GET /`, `GET /debug/requests` |
 
 **Auth:** `X-ApiKeys: accessKey=<key>; secretKey=<secret>`  
 The mock is permissive — any non-empty keys are accepted unless `TIO_ACCESS_KEY` /

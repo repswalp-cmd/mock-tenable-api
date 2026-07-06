@@ -19,16 +19,85 @@ The UAI connector uses the **V2 asset export flow**:
 3. `GET /assets/export/{uuid}/chunks/1` → JSON array of 1000 assets (not wrapped)
 4. `GET /assets/export/{uuid}/chunks/2` → JSON array of 587 assets
 
-Additional endpoints implemented (stubs for connector discovery scope):
-- Vulnerabilities export (POST/GET /vulns/export/...) — empty, FINISHED
-- Compliance export (POST/GET /compliance/export/...) — empty, FINISHED
-- GET /networks — default network record (UUID 00000000-...) required by asset records
-- GET /scanners — single scanner record
-- GET /scans — empty
-- GET /users — single admin user
-- GET /user-groups — empty
-- GET /was/v2/vulnerabilities — empty WAS vulns
-- GET /filters/workbenches/... — empty filter lists
+**V2 chunk schema** — network identity fields are nested under `network`:
+```json
+{
+  "id": "...",
+  "has_agent": true,
+  "network": {
+    "network_id": "00000000-0000-0000-0000-000000000000",
+    "network_name": "Default",
+    "ipv4s": ["10.x.x.x"],
+    "fqdns": ["lsys-blr-lap-0001"],
+    "hostnames": ["lsys-blr-lap-0001"],
+    "mac_addresses": ["AA:BB:CC:DD:EE:FF"],
+    "netbios_names": [],
+    "network_interfaces": [{"name": "eth0", "ipv4s": [...], "mac_addresses": [...], ...}]
+  },
+  "scan": {"last_scan_time": "...", "first_scan_time": "..."},
+  "operating_systems": ["Windows 11 Enterprise"],
+  "system_types": ["general-purpose"],
+  "agent_names": ["lsys-blr-lap-0001"],
+  "sources": [{"name": "NESSUS_SCAN", ...}]
+}
+```
+
+**Note:** `network.fqdns[0]` is read by the connector as the asset display name — keep it
+as the short hostname (no domain suffix) so the portal shows clean names.
+
+### Full endpoint list
+
+**Assets (full data):**
+- `POST /assets/v2/export` — start V2 asset export (static UUID)
+- `POST /assets/export` — start V1 asset export (same static UUID)
+- `GET  /assets/export/{uuid}/status` — export status → FINISHED
+- `GET  /assets/export/status` — bare status (no UUID)
+- `GET  /assets/export/{uuid}/chunks/{n}` — download chunk
+- `GET  /assets` — full asset list
+- `GET  /assets/{uuid}` — single asset
+
+**Vulnerabilities (empty export):**
+- `POST /vulns/export`
+- `GET  /vulns/export/{uuid}/status` → FINISHED, 0 chunks
+- `GET  /vulns/export/status`
+- `GET  /vulns/export/{uuid}/chunks/{n}` → empty array
+
+**Compliance (empty export):**
+- `POST /compliance/export`
+- `GET  /compliance/export/{uuid}/status` → FINISHED, 0 chunks
+- `GET  /compliance/export/status`
+- `GET  /compliance/export/{uuid}/chunks/{n}` → empty array
+
+**Platform & Settings stubs:**
+- `GET  /networks` — default network record (UUID 00000000-…)
+- `GET  /scanners` — single scanner record
+- `GET  /scans` — empty list
+- `GET  /exclusions` — empty list
+- `GET  /users` — single admin user
+- `GET  /groups` — empty groups list
+- `GET  /user-groups` — empty user-groups list
+- `GET  /user-groups/{id}/members` — empty members list
+- `GET  /scanners/null/agents` — empty agents (null = default scanner)
+- `GET  /scanners/{id}/agents` — empty agents
+- `GET  /server/properties` — realistic server properties dict
+- `GET  /api/v3/assets/attributes` — empty attributes list
+
+**Recast / Rules:**
+- `GET+POST /v1/recast/rules/search` — empty rules list
+
+**WAS (Web App Scanning) stubs:**
+- `GET      /was/v2/vulnerabilities` — empty
+- `GET+POST /was/v2/vulnerabilities/search` — empty pagination response
+- `GET      /was/v2/configs` — empty
+- `GET      /was/v2/scans` — empty
+
+**Filters stubs:**
+- `GET /filters/workbenches/assets` — empty filter list
+- `GET /filters/workbenches/vulnerabilities` — empty filter list
+
+**Health & Diagnostics:**
+- `GET /` — health check + loaded asset count + all endpoints
+- `GET /debug/requests` — last 200 connector requests (add `?clear=1` to reset)
 
 **Auth:** `X-ApiKeys: accessKey=<key>; secretKey=<secret>` header.
 Permissive unless `TIO_ACCESS_KEY` / `TIO_SECRET_KEY` env vars are set.
@@ -37,6 +106,9 @@ Permissive unless `TIO_ACCESS_KEY` / `TIO_SECRET_KEY` env vars are set.
 
 Single Flask app (`app.py`) loads `seed_data/raw/assets.json` into memory at
 startup and serves the Tenable API. Deployed via Dockerfile (gunicorn).
+
+`last_seen` is overridden dynamically at serve time (per-asset jitter) so assets
+always appear recently seen. Controlled by `TIO_DYNAMIC_LASTSEEN` env var (default: on).
 
 ## Data generation
 

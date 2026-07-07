@@ -1,6 +1,6 @@
 # Mock Tenable Vulnerability Management API
 
-A mock **Tenable Vulnerability Management** API (Flask) serving **1,587 assets** for the
+A mock **Tenable Vulnerability Management** API (Flask) serving **1,580 assets** for the
 **Luminary Systems** demo tenant, so the Infoblox Universal Asset Insights Tenable
 connector can discover assets without a real Tenable subscription.
 
@@ -52,7 +52,7 @@ The mock is permissive — any non-empty keys are accepted unless `TIO_ACCESS_KE
 
 ## Dataset
 
-**1,587 Luminary Systems assets** — 2 export chunks (1,000 + 587)
+**1,580 Luminary Systems assets** — 2 export chunks (1,000 + 580)
 
 Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/luminary-demo-docs)
 
@@ -60,12 +60,12 @@ Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/lumina
 
 | Site          | Assets |
 |---------------|--------|
-| San Francisco | 512    |
+| San Francisco | 509    |
 | Bangalore     | 293    |
-| London        | 241    |
-| New York      | 232    |
+| London        | 240    |
+| New York      | 230    |
 | Amsterdam     | 176    |
-| Singapore     | 133    |
+| Singapore     | 132    |
 
 ### By category
 
@@ -87,6 +87,7 @@ Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/lumina
 | security     | 9     | Security appliances, no agent      |
 | clinic       | 7     | Medical devices, no agent          |
 | esx_server   | 5     | ESXi hosts, no agent               |
+| **Total**    | **1,580** | |
 
 **No user/email fields** — vulnerability scanner data only.
 

@@ -12,7 +12,7 @@ Insights Tenable connector, plus stub endpoints for all discovery scope groups:
     GET  /assets
     GET  /assets/{uuid}
 
-  VULNERABILITIES (empty export):
+  VULNERABILITIES (358 findings, 100 assets, real CVEs):
     POST /vulns/export
     GET  /vulns/export/{uuid}/status
     GET  /vulns/export/status
@@ -89,6 +89,19 @@ CHUNKS_AVAILABLE = list(range(1, N_CHUNKS + 1))
 
 print(f"[startup] Loaded {len(ASSETS)} assets, {N_CHUNKS} chunks")
 print(f"[startup] Asset export UUID: {ASSET_EXPORT_UUID}")
+
+# ── Load vulnerability findings ───────────────────────────────────────────────
+_vuln_path = DATA_DIR / "vulns.json"
+if _vuln_path.exists():
+    _vuln_raw       = json.loads(_vuln_path.read_text())
+    VULN_FINDINGS   = _vuln_raw.get("findings", [])
+    VULN_CHUNK_SIZE = _vuln_raw.get("chunk_size", 500)
+    VULN_N_CHUNKS   = _vuln_raw.get("chunks", max(1, math.ceil(len(VULN_FINDINGS) / 500)))
+else:
+    VULN_FINDINGS, VULN_CHUNK_SIZE, VULN_N_CHUNKS = [], 500, 0
+
+VULN_CHUNKS_AVAILABLE = list(range(1, VULN_N_CHUNKS + 1)) if VULN_FINDINGS else []
+print(f"[startup] Loaded {len(VULN_FINDINGS)} vuln findings, {VULN_N_CHUNKS} chunks")
 
 # ── Diagnostics ───────────────────────────────────────────────────────────────
 REQUEST_LOG = deque(maxlen=8000)
@@ -213,14 +226,14 @@ def asset_detail(asset_uuid):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# VULNERABILITIES — empty export (no vuln data in demo)
+# VULNERABILITIES — 358 findings across 100 laptop/VM/server assets
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.route("/vulns/export", methods=["POST"])
 def export_vulns():
     if not require_api_keys():
         return err_401()
-    _log(200, f"vuln export → {VULN_EXPORT_UUID}")
+    _log(200, f"vuln export → {VULN_EXPORT_UUID} ({len(VULN_FINDINGS)} findings)")
     return jsonify({"export_uuid": VULN_EXPORT_UUID})
 
 
@@ -228,8 +241,8 @@ def export_vulns():
 def export_vulns_status(export_uuid):
     if not require_api_keys():
         return err_401()
-    _log(200, f"vuln export status {export_uuid}")
-    return jsonify({"status": "FINISHED", "chunks_available": []})
+    _log(200, f"vuln export status {export_uuid} chunks={VULN_CHUNKS_AVAILABLE}")
+    return jsonify({"status": "FINISHED", "chunks_available": VULN_CHUNKS_AVAILABLE})
 
 
 @app.route("/vulns/export/status", methods=["GET"])
@@ -237,15 +250,22 @@ def export_vulns_status_list():
     if not require_api_keys():
         return err_401()
     _log(200, "vuln export status list")
-    return jsonify({"exports": [{"export_uuid": VULN_EXPORT_UUID, "status": "FINISHED"}]})
+    return jsonify({"exports": [{"export_uuid": VULN_EXPORT_UUID, "status": "FINISHED",
+                                  "chunks_available": VULN_CHUNKS_AVAILABLE}]})
 
 
 @app.route("/vulns/export/<export_uuid>/chunks/<int:chunk_id>", methods=["GET"])
 def export_vulns_chunk(export_uuid, chunk_id):
     if not require_api_keys():
         return err_401()
-    _log(404, f"vuln chunk {chunk_id} not found (empty export)")
-    return err_404("No vulnerability chunks — export is empty")
+    if chunk_id not in VULN_CHUNKS_AVAILABLE:
+        _log(404, f"vuln chunk {chunk_id} not found")
+        return err_404(f"Chunk {chunk_id} not found")
+    start = (chunk_id - 1) * VULN_CHUNK_SIZE
+    end   = start + VULN_CHUNK_SIZE
+    chunk = VULN_FINDINGS[start:end]
+    _log(200, f"vuln chunk {chunk_id}: {len(chunk)} findings")
+    return jsonify(chunk)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

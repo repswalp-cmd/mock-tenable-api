@@ -138,3 +138,7 @@ aws apprunner start-deployment --profile okta-sso --region us-east-1 \
 ## Contact
 
 Built for Infoblox Universal Asset Insights Simulator. Contact: TME Team or Rajkumar Repswal for any questions.
+
+---
+
+*Mock API for testing purposes. Not affiliated with or endorsed by Tenable or Infoblox.*

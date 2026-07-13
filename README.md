@@ -1,6 +1,6 @@
 # Mock Tenable Vulnerability Management API
 
-A mock **Tenable Vulnerability Management** API (Flask) serving **1,580 assets** for the
+A mock **Tenable Vulnerability Management** API (Flask) serving **1,425 assets** for the
 **Luminary Systems** demo tenant, so the Infoblox Universal Asset Insights Tenable
 connector can discover assets without a real Tenable subscription.
 
@@ -20,7 +20,7 @@ GET  /assets/export/{export_uuid}/status
   → {"status": "FINISHED", "chunks_available": [1, 2]}
 
 GET  /assets/export/{export_uuid}/chunks/1   → JSON array, 1000 assets
-GET  /assets/export/{export_uuid}/chunks/2   → JSON array, 587 assets
+GET  /assets/export/{export_uuid}/chunks/2   → JSON array, 425 assets
 ```
 
 Asset records use the **V2 chunk schema** — network identity fields nested under `network`:
@@ -52,7 +52,7 @@ The mock is permissive — any non-empty keys are accepted unless `TIO_ACCESS_KE
 
 ## Dataset
 
-**1,580 Luminary Systems assets** — 2 export chunks (1,000 + 580)
+**1,425 Luminary Systems assets** — 2 export chunks (1,000 + 425)
 
 Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/luminary-demo-docs)
 
@@ -60,12 +60,12 @@ Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/lumina
 
 | Site          | Assets |
 |---------------|--------|
-| San Francisco | 509    |
-| Bangalore     | 293    |
-| London        | 240    |
-| New York      | 230    |
-| Amsterdam     | 176    |
-| Singapore     | 132    |
+| San Francisco | 453    |
+| Bangalore     | 266    |
+| London        | 215    |
+| New York      | 204    |
+| Amsterdam     | 165    |
+| Singapore     | 122    |
 
 ### By category
 
@@ -87,7 +87,7 @@ Source: [luminary-demo-docs master sheet](https://github.com/repswalp-cmd/lumina
 | security     | 9     | Security appliances, no agent      |
 | clinic       | 7     | Medical devices, no agent          |
 | esx_server   | 5     | ESXi hosts, no agent               |
-| **Total**    | **1,580** | |
+| **Total**    | **1,425** | |
 
 **No user/email fields** — vulnerability scanner data only.
 
@@ -132,3 +132,9 @@ docker push 905418046272.dkr.ecr.us-east-1.amazonaws.com/mock-tenable-api:latest
 aws apprunner start-deployment --profile okta-sso --region us-east-1 \
   --service-arn <ARN>
 ```
+
+---
+
+## Contact
+
+Built for Infoblox Universal Asset Insights testing. Contact: TME Team or Rajkumar Repswal for any questions.
